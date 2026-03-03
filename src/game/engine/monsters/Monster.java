@@ -1,5 +1,5 @@
 package monsters;
-
+import game.engine.Role;
 
 public abstract class Monster implements Comparable<Monster>{
 	private String name;
@@ -93,3 +93,4 @@ return "Name : " + name + "\n" +
 	
 	
 }
+
