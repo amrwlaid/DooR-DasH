@@ -1,4 +1,4 @@
 package game.engine.monsters;
 
-public class xyk {
+public class Monsters {
 }
