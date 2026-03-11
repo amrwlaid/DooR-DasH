@@ -23,123 +23,143 @@ public class DataLoader {
 
 	 public static ArrayList<Card> readCards() throws IOException {
 		 	BufferedReader r = new BufferedReader(new FileReader(CARDS_FILE_NAME));
-		    ArrayList<Card> arr = new ArrayList<>();
+		    ArrayList<Card> loadedCards = new ArrayList<>();
 
-		    String line ;
-
-
-		    while ((line = r.readLine()) != null) {  // read each card
-		        String[] data = line.split(",");     // split CSV columns
-
-		        String type = data[0];
-		        String name = data[1];
-		        String description = data[2];
-		        int rarity = Integer.parseInt(data[3]);
+		    ArrayList<String > cardsList = new ArrayList<String>();
+		    String line = r.readLine(); 
+		    while (line  != null) {  
+		    	cardsList.add(line);
+		    	 line = r.readLine();	
+		    }
+		    for (int i = 0 ; i < cardsList.size() ; i ++){
+		    		        String[] csvRow = cardsList.get(i).trim().split(",");
+		        String type = csvRow[0].trim();
+		        String name = csvRow[1].trim();
+		        String description = csvRow[2].trim();
+		        int rarity = Integer.parseInt(csvRow[3].trim());
 		        
-		        if (type.equals("SwapperCard"))
+		        if (type.equals("SWAPPER"))
 		        {
 		        	SwapperCard card = new SwapperCard(name , description , rarity);
-		        arr.add(card);
+		        	loadedCards.add(card);
 		        }
-		        else if (type.equals("ShieldCard") ){
+		        else if (type.equals("SHIELD") ){
 		        	ShieldCard card = new ShieldCard(name , description , rarity);
-			        arr.add(card);
+		        	loadedCards.add(card);
 			        	
 		        }
-		        else if (type.equals("EnergyStealCard"))
+		        else if (type.equals("ENERGYSTEAL"))
 		        {
-		        	EnergyStealCard card = new EnergyStealCard(name , description , rarity ,  Integer.parseInt(data[4]));
-		        arr.add(card);
+		        	EnergyStealCard card = new EnergyStealCard(name , description , rarity ,  Integer.parseInt(csvRow[4].trim()));
+		        	loadedCards.add(card);
 		        }
-		        else if (type.equals("StartOverCard"))
+		        else if (type.equals("STARTOVER"))
 		        {
 					boolean lucky;
-					if (data[4].equals("true")){lucky = true;}
+					if (csvRow[4].trim().equals("true")){lucky = true;}
 					else {lucky = false;}
 		        	StartOverCard card = new StartOverCard(name , description , rarity ,  lucky);
-		        	arr.add(card);
+		        	loadedCards.add(card);
 		        }
-		        else {
-		        	ConfusionCard card = new ConfusionCard(name , description , rarity , Integer.parseInt(data[4]));
-		        arr.add(card);
+		        else 
+		        {
+		        	ConfusionCard card = new ConfusionCard(name , description , rarity , Integer.parseInt(csvRow[4].trim()));
+		        	loadedCards.add(card);
 		        }
 			}
 		    r.close();
-		    return arr;
+		    return loadedCards;
 	 }
 	 public static ArrayList<Cell> readCells() throws IOException{
 		   BufferedReader r = new BufferedReader(new FileReader(CELLS_FILE_NAME));
-		    ArrayList<Cell> arr = new ArrayList<>();
-
-		    String line ; 
-		    while ((line = r.readLine()) != null) {  
-		        String[] data = line.split(",");     
-		    	if (data.length == 3){
+		    ArrayList<Cell> loadedCells = new ArrayList<>();
+		    ArrayList<String > cellsList = new ArrayList<String>();
+		    String line = r.readLine(); 
+		    while (line  != null) {  
+		    	cellsList.add(line);
+		    	 line = r.readLine();	
+		    }
+		    for (int i = 0 ; i < cellsList.size() ; i ++){
+		        String[] csvRow = cellsList.get(i).trim().split("," , -1);     
+		    	if (csvRow.length == 3){
 					Role role;
-					if (data[1].equals("SCARER")){role = Role.SCARER;}
+					if (csvRow[1].trim().equals("SCARER")){role = Role.SCARER;}
 					else {role = Role.LAUGHER;}
 
-		    		DoorCell cell = new DoorCell(data[0] , role , Integer.parseInt(data[2]));
-		    		arr.add(cell);
+					Cell cell = new DoorCell(csvRow[0].trim() , role , Integer.parseInt(csvRow[2].trim()));
+					loadedCells.add(cell);
 		    	}
 		    	else{
-		    		if (Integer.parseInt(data[1] ) < 0) {
-		    			ConveyorBelt cell = new ConveyorBelt(data[0] , Integer.parseInt(data[1] ));
-		    			arr.add(cell);
+		    		if (Integer.parseInt(csvRow[1].trim() ) < 0) {
+		    			Cell cell = new ConveyorBelt(csvRow[0].trim() , Integer.parseInt(csvRow[1].trim() ));
+		    			loadedCells.add(cell);
 		    		}
 		    		else {
-						ContaminationSock cell = new ContaminationSock(data[0] , Integer.parseInt(data[1] ));
-	    				arr.add(cell);
+						Cell cell = new ContaminationSock(csvRow[0].trim() , Integer.parseInt(csvRow[1].trim() ));
+						loadedCells.add(cell);
 					}
 				}
 		    }
 
 
 		    r.close();
-		    return arr;
+		    return loadedCells;
 		 
 		 
 		 
 	 }
 	 public static ArrayList<Monster> readMonsters() throws IOException {
 		 BufferedReader r = new BufferedReader(new FileReader(MONSTERS_FILE_NAME));
-		 ArrayList<Monster> arr = new ArrayList<>();
-
-		 String line;
-		 while ((line = r.readLine()) != null) {
-			 String[] data = line.split(",");
-			 Role role;
-			 if (data[3].equals("laugher")) role = Role.LAUGHER;
-			 else role = Role.SCARER;
-			 if (data[0].equals("DYNAMO")) {
-
-				 Dynamo m = new Dynamo(data[1], data[2], role, Integer.parseInt(data[4]));
-				 arr.add(m);
-			 } else if (data[0].equals("SCHEMER")) {
-
-				 Schemer m = new Schemer(data[1], data[2], role, Integer.parseInt(data[4]));
-				 arr.add(m);
-			 } else if (data[0].equals("MULTITASKER")) {
-				 MultiTasker m = new MultiTasker(data[1], data[2], role, Integer.parseInt(data[4]));
-				 arr.add(m);
-			 } else {
-				 Dasher m = new Dasher(data[1], data[2], role, Integer.parseInt(data[4]));
-				 arr.add(m);
-			 }
+		 ArrayList<Monster> loadedMonsters = new ArrayList<>();
+		 ArrayList<String > monstersList = new ArrayList<String>();
+		 String line = r.readLine();
+		 while (line != null) {
+monstersList.add(line);		
 
 
 
-
-
+			  line = r.readLine();
 		 }
+for (int i = 0 ; i < monstersList.size() ; i ++)
+	
+		 
+{
+	 String[] csvRow = monstersList.get(i).split("," , -1);
+	 Role role;
+	 if (csvRow[3].trim().equals("LAUGHER")) role = Role.LAUGHER;
+	 else role = Role.SCARER;
+	 if (csvRow[0].trim().equals("DYNAMO")) {
 
+		 Monster monster = new Dynamo(csvRow[1].trim(), csvRow[2].trim(), role, Integer.parseInt(csvRow[4].trim()));
+		 loadedMonsters.add(monster);
+	 } else if (csvRow[0].trim().equals("SCHEMER")) {
 
+		 Monster monster = new Schemer(csvRow[1].trim(), csvRow[2].trim(), role, Integer.parseInt(csvRow[4].trim()));
+		 loadedMonsters.add(monster);
+	 } else if (csvRow[0].trim().equals("MULTITASKER")) {
+		 Monster monster = new MultiTasker(csvRow[1].trim(), csvRow[2].trim(), role, Integer.parseInt(csvRow[4].trim()));
+		 loadedMonsters.add(monster);
+	 } else {
+		 Monster monster = new Dasher(csvRow[1].trim(), csvRow[2].trim(), role, Integer.parseInt(csvRow[4].trim()));
+		 loadedMonsters.add(monster);
+	 }
+
+	
+}
 		 r.close();
-		 return arr;
+		 return loadedMonsters;
 
 
 	 }
 
+
+public static void main(String [ ]args) throws IOException{
+	ArrayList<Monster> m = readMonsters();;
+for(int i = 0 ; i < m.size(); i ++)
+	System.out.println(m.get(i));
+	
+	
+}
 }
 
 
