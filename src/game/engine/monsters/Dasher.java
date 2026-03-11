@@ -13,7 +13,7 @@ public class Dasher extends Monster {
 	 public int getMomentumTurns(){
 		 return momentumTurns;
 	 }
-	 public void setmomentumTurns(int m){
+	 public void setMomentumTurns(int m){
 		  momentumTurns = m;
 	 }
 public String toString(){

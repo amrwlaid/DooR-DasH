@@ -11,15 +11,14 @@ public abstract class Monster implements Comparable<Monster>{
 	private boolean frozen;
 	private boolean shielded;
 	private int confusionTurns;
-	public Monster(){
-		// default constructor
-	}
+
 	public Monster(String name, String description, Role originalRole, int energy){
 		this.name = name;
 		this.description = description;
 		this.originalRole = originalRole;
 		this.role = originalRole;
-		this.energy = energy;
+		if (energy >= 0) this.energy = energy;
+		else this.energy = 0;
 		this.position = this.confusionTurns = 0;
 		this.shielded = this.frozen = false;
 	}
@@ -41,21 +40,27 @@ public void setRole(Role r){
 //energy
 public int getEnergy(){
 	return energy;}
-public void setEnergy(int e){
-	 energy = e;}
+public void setEnergy(int e) {
+		if (e >= 0)  energy = e;
+		else energy = 0;
+
+
+	}
 //position
 public int getPosition(){
 	return position;
 }
 
-public void setPosition(int p){
-	 position = p;
-}
+	public void setPosition(int p){
+
+		if (p >= 100){ p -= 100;}
+		position = p;
+	}
 //freezing
 public boolean isFrozen(){
 	return frozen;
 }
-public void setForzen(boolean f){
+public void setFrozen(boolean f){
 	frozen = f;
 }
 //shielding

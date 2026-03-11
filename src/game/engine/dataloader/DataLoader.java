@@ -1,26 +1,32 @@
 package game.engine.dataloader;
+import game.engine.cards.*;
+import game.engine.cells.Cell;
+import game.engine.cells.ContaminationSock;
+import game.engine.cells.ConveyorBelt;
+import game.engine.cells.DoorCell;
 import game.engine.monsters.Dasher;
 import game.engine.monsters.Dynamo;
 import game.engine.monsters.Schemer;
 import game.engine.monsters.MultiTasker;
 import game.engine.monsters.Monster;
 import game.engine.Role;
-import javax.smartcardio.Card;
+
 import java.util.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.FileReader;
 
 public class DataLoader {
-	 private static String CARDS_File_NAME = "cards.csv";
-	 private static String Cells_File_NAME = "cells.csv";
-	 private static String Monsters_File_NAME = "monsters.csv";
+	 private static final String CARDS_FILE_NAME = "cards.csv";
+	 private static final String CELLS_FILE_NAME = "cells.csv";
+	 private static final String MONSTERS_FILE_NAME = "monsters.csv";
 
 	 public static ArrayList<Card> readCards() throws IOException {
-		 	BufferedReader r = new BufferedReader(new FileReader(CARDS_File_NAME));
+		 	BufferedReader r = new BufferedReader(new FileReader(CARDS_FILE_NAME));
 		    ArrayList<Card> arr = new ArrayList<>();
 
-		    String line ; 
+		    String line ;
+
 
 		    while ((line = r.readLine()) != null) {  // read each card
 		        String[] data = line.split(",");     // split CSV columns
@@ -32,42 +38,48 @@ public class DataLoader {
 		        
 		        if (type.equals("SwapperCard"))
 		        {
-		        	SwapperCard card = new SwapperCard(type , name , description , rarity , true);	
+		        	SwapperCard card = new SwapperCard(name , description , rarity);
 		        arr.add(card);
 		        }
 		        else if (type.equals("ShieldCard") ){
-		        	ShieldCard card = new ShieldCard(type , name , description , rarity , true);	
+		        	ShieldCard card = new ShieldCard(name , description , rarity);
 			        arr.add(card);
 			        	
 		        }
 		        else if (type.equals("EnergyStealCard"))
 		        {
-		        	EnergyStealCard card = new EnergyStealCard(type , name , description , rarity , true , data[4]);	
+		        	EnergyStealCard card = new EnergyStealCard(name , description , rarity ,  Integer.parseInt(data[4]));
 		        arr.add(card);
 		        }
-		        else if (type.equals("forStartOverCard"))
+		        else if (type.equals("StartOverCard"))
 		        {
-		        	forStartOverCard card = new forStartOverCard(type , name , description , rarity ,  data[4]);	
+					boolean lucky;
+					if (data[4].equals("true")){lucky = true;}
+					else {lucky = false;}
+		        	StartOverCard card = new StartOverCard(name , description , rarity ,  lucky);
 		        	arr.add(card);
 		        }
 		        else {
-		        	ConfusionCard card = new ConfusionCard(type , name , description , rarity , false , data[4]);
+		        	ConfusionCard card = new ConfusionCard(name , description , rarity , Integer.parseInt(data[4]));
 		        arr.add(card);
 		        }
 			}
 		    r.close();
 		    return arr;
 	 }
-		 
 	 public static ArrayList<Cell> readCells() throws IOException{
-		   BufferedReader r = new BufferedReader(new FileReader(Cells_File_NAME));
+		   BufferedReader r = new BufferedReader(new FileReader(CELLS_FILE_NAME));
 		    ArrayList<Cell> arr = new ArrayList<>();
 
 		    String line ; 
 		    while ((line = r.readLine()) != null) {  
 		        String[] data = line.split(",");     
 		    	if (data.length == 3){
-		    		DoorCell cell = new DoorCell(data[0] , data[1] , Integer.parseInt(data[2]));
+					Role role;
+					if (data[1].equals("SCARER")){role = Role.SCARER;}
+					else {role = Role.LAUGHER;}
+
+		    		DoorCell cell = new DoorCell(data[0] , role , Integer.parseInt(data[2]));
 		    		arr.add(cell);
 		    	}
 		    	else{
@@ -90,7 +102,7 @@ public class DataLoader {
 		 
 	 }
 	 public static ArrayList<Monster> readMonsters() throws IOException {
-		 BufferedReader r = new BufferedReader(new FileReader(Monsters_File_NAME));
+		 BufferedReader r = new BufferedReader(new FileReader(MONSTERS_FILE_NAME));
 		 ArrayList<Monster> arr = new ArrayList<>();
 
 		 String line;
@@ -129,5 +141,6 @@ public class DataLoader {
 	 }
 
 }
+
 
 
