@@ -17,12 +17,12 @@ public class MonsterCell extends Cell {
 	public void onLand(Monster landingMonster, Monster opponentMonster) {
 		super.onLand(landingMonster, opponentMonster);
 		if(landingMonster.getRole()==this.cellMonster.getRole()) {
-			try{
+			//try{
 					landingMonster.executePowerupEffect(opponentMonster);
-			} 
-			catch (OutOfEnergyException e) {
-					e.printStackTrace();
-			}	
+			//} 
+			//catch (OutOfEnergyException e) {
+					//e.printStackTrace();
+			//}	
 		}else{
 			
 			if(landingMonster.getEnergy()>this.cellMonster.getEnergy()) {
