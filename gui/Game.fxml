@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.Insets?>
+
+<HBox fx:id="mainRoot" fx:controller="gui.GameController" xmlns:fx="http://javafx.com/fxml" spacing="20" 
+      style="-fx-background-color: linear-gradient(to bottom right, #0f0c29, #302b63, #24243e);">
+    
+    <padding>
+        <Insets bottom="20" left="20" right="20" top="20"/>
+    </padding>
+
+    <StackPane alignment="TOP_LEFT" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 15; -fx-padding: 10; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 15;">
+        <GridPane fx:id="boardGrid" hgap="2" vgap="2" alignment="TOP_LEFT" />
+        <Pane fx:id="tokenLayer" mouseTransparent="true" pickOnBounds="false" prefWidth="670" prefHeight="670" />
+    </StackPane>
+
+    <VBox prefWidth="340" spacing="10" alignment="TOP_CENTER" 
+          style="-fx-background-color: rgba(255, 255, 255, 0.95); -fx-padding: 12; -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 15, 0, 0, 0);">
+        
+        <VBox alignment="CENTER" spacing="6">
+            <Label text="THE FLOOR DICE" style="-fx-font-weight: bold; -fx-font-size: 15; -fx-text-fill: #302b63;" />
+            
+            <StackPane fx:id="diceCube" onMouseClicked="#handlePlayerTurn" style="-fx-cursor: hand;">
+                <Rectangle width="75" height="75" arcWidth="15" arcHeight="15" fill="WHITE" stroke="#302b63" strokeWidth="4" />
+                <Label fx:id="diceLabel" text="?" style="-fx-font-size: 36; -fx-font-weight: bold; -fx-text-fill: #302b63;" />
+            </StackPane>
+            
+            <Button fx:id="powerBtn" text="USE POWER-UP" onAction="#handlePowerup" 
+                    style="-fx-background-color: #ff9800; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11; -fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 6 12;" />
+            
+            <Label fx:id="statusLabel" text="Ready to Dash!" wrapText="true" textAlignment="CENTER" 
+                   style="-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #c62828;" />
+                   
+            <Label fx:id="turnLabel" text="Turn: PLAYER" style="-fx-font-size: 12; -fx-font-weight: bold; -fx-text-fill: #302b63;" />
+        </VBox>
+
+        <Separator prefWidth="200.0" />
+
+        <VBox alignment="TOP_LEFT" spacing="4" VBox.vgrow="ALWAYS">
+            <Label text="LIVE GAME LOG FEED" style="-fx-font-weight: bold; -fx-font-size: 11; -fx-text-fill: #2e7d32;" />
+            <TextArea fx:id="logFeedArea" editable="false" wrapText="true" prefHeight="130" minHeight="100"
+                      style="-fx-font-family: 'Courier New'; -fx-font-size: 11; -fx-control-inner-background: #f1f8e9; -fx-text-fill: #1b5e20; -fx-border-color: #a5d6a7; -fx-border-radius: 4;" />
+        </VBox>
+
+        <VBox alignment="TOP_CENTER" spacing="2" style="-fx-background-color: #f3e5f5; -fx-padding: 6; -fx-background-radius: 6; -fx-border-color: #8e24aa; -fx-border-width: 1;">
+            <Label text="LATEST CARD ACTION" style="-fx-font-weight: bold; -fx-font-size: 10; -fx-text-fill: #8e24aa;" />
+            <Label fx:id="cardLabel" text="No cards drawn yet." wrapText="true" textAlignment="CENTER" style="-fx-font-size: 11; -fx-text-fill: #4a148c;" />
+        </VBox>
+
+        <VBox spacing="2" style="-fx-border-color: #2196f3; -fx-border-width: 1.5; -fx-padding: 8; -fx-background-color: #f1f8ff; -fx-background-radius: 8; -fx-border-radius: 8;">
+            <Label fx:id="pName" text="YOUR MONSTER" style="-fx-font-weight: bold; -fx-text-fill: #2196f3; -fx-font-size: 12;" />
+            <Label fx:id="pPos" text="Position: 1" style="-fx-font-size: 11;" />
+            <Label fx:id="pOrig" text="Original: --" style="-fx-font-size: 11;" />
+            <Label fx:id="pCurr" text="Current Role: --" style="-fx-font-size: 11;" />
+            <Label fx:id="pType" text="Type: --" style="-fx-font-size: 11;" />
+            <Label fx:id="pEnergy" text="Energy: 0" style="-fx-text-fill: #2e7d32; -fx-font-weight: bold; -fx-font-size: 11;" />
+            <Label fx:id="pStatus" text="Status Effects: None" wrapText="true" style="-fx-font-size: 10; -fx-text-fill: #555;" />
+        </VBox>
+
+        <VBox spacing="2" style="-fx-border-color: #f44336; -fx-border-width: 1.5; -fx-padding: 8; -fx-background-color: #fff1f1; -fx-background-radius: 8; -fx-border-radius: 8;">
+            <Label fx:id="oName" text="OPPONENT" style="-fx-font-weight: bold; -fx-text-fill: #f44336; -fx-font-size: 12;" />
+            <Label fx:id="oPos" text="Position: 1" style="-fx-font-size: 11;" />
+            <Label fx:id="oOrig" text="Original: --" style="-fx-font-size: 11;" />
+            <Label fx:id="oCurr" text="Current Role: --" style="-fx-font-size: 11;" />
+            <Label fx:id="oType" text="Type: --" style="-fx-font-size: 11;" />
+            <Label fx:id="oEnergy" text="Energy: 0" style="-fx-text-fill: #c62828; -fx-font-weight: bold; -fx-font-size: 11;" />
+            <Label fx:id="oStatus" text="Status Effects: None" wrapText="true" style="-fx-font-size: 10; -fx-text-fill: #555;" />
+        </VBox>
+
+        <Region prefHeight="5" /> 
+        <Button text="EXIT GAME" onAction="#handleExit" style="-fx-background-color: #757575; -fx-text-fill: white; -fx-font-size: 10; -fx-background-radius: 4; -fx-cursor: hand;" />
+    </VBox>
+</HBox>

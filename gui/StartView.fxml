@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="startRoot" 
+           prefWidth="1200" 
+           prefHeight="800" 
+           xmlns="http://javafx.com/javafx/8"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="gui.Controlle_The_Background">
+
+    <children>
+
+        <ImageView fx:id="backgroundImage" 
+                   fitWidth="${startRoot.width}" 
+                   fitHeight="${startRoot.height}" 
+                   preserveRatio="false">
+            <image>
+                <Image url="@monsters.jpg"/>
+            </image>
+        </ImageView>
+
+        <VBox spacing="18"
+              alignment="BOTTOM_CENTER"
+              maxHeight="180"
+              StackPane.alignment="BOTTOM_CENTER"
+              style="-fx-padding: 0 0 60 0;"> 
+
+            <Button text="Start Game"
+                    prefWidth="220" 
+                    prefHeight="48"
+                    onAction="#lets_play_the_game"
+                    style="-fx-font-family: 'Segoe UI', Arial;
+                           -fx-font-size: 15px;
+                           -fx-font-weight: bold;
+                           -fx-background-color: #4CAF50;
+                           -fx-text-fill: white;
+                           -fx-background-radius: 15;
+                           -fx-cursor: hand;
+                           -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 8, 0, 0, 3);"/>
+
+            <Button text="Game Rules"
+                    prefWidth="220"
+                    prefHeight="48"
+                    onAction="#openRules"
+                    style="-fx-font-family: 'Segoe UI', Arial;
+                           -fx-font-size: 15px;
+                           -fx-font-weight: bold;
+                           -fx-background-color: #2196F3;
+                           -fx-text-fill: white;
+                           -fx-background-radius: 15;
+                           -fx-cursor: hand;
+                           -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 8, 0, 0, 3);"/>
+
+        </VBox>
+
+    </children>
+
+</StackPane>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+
+<StackPane fx:id="rulesRoot" 
+           prefWidth="1200" 
+           prefHeight="800" 
+           xmlns="http://javafx.com/javafx/8"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="gui.RulesController"
+           style="-fx-background-color: linear-gradient(to bottom right, #0f0c29, #302b63, #24243e);">
+
+    <children>
+        
+        <VBox alignment="CENTER" spacing="25" maxHeight="620" maxWidth="750"
+              style="-fx-background-color: rgba(255, 255, 255, 0.96); 
+                     -fx-background-radius: 25; 
+                     -fx-padding: 35 45 35 45; 
+                     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 30, 0, 0, 0);">
+            
+            <VBox alignment="CENTER" spacing="5">
+                <Label text="📜" style="-fx-font-size: 36;" />
+                <Label text="GAMEPLAY MANUAL &amp; RULES" 
+                       style="-fx-font-family: 'Segoe UI', Arial, sans-serif;
+                              -fx-font-size: 26px; 
+                              -fx-font-weight: bold; 
+                              -fx-text-fill: #302b63; 
+                              -fx-letter-spacing: 2;" />
+                <Label text="Monsters, Inc. Scare vs Laugh Board Engine Guide" 
+                       style="-fx-font-family: 'Segoe UI'; -fx-font-size: 12px; -fx-text-fill: #757575; -fx-font-style: italic;" />
+            </VBox>
+
+            <Separator prefWidth="600" style="-fx-opacity: 0.6;" />
+
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" prefHeight="380"
+                        style="-fx-background: transparent; -fx-background-color: transparent; -fx-padding: 0 10 0 0;">
+                <content>
+                    <VBox spacing="18" style="-fx-background-color: transparent;">
+                        
+                        <VBox spacing="4" style="-fx-background-color: #f8f9fa; -fx-padding: 12; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;">
+                            <Label text="1. POWER-UP PHASE (Optional)" style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2e7d32;" />
+                            <Label text="• Monsters may spend 500 Energy points at the start of their turn to unleash their unique tactical ability or remove status conditions." 
+                                   wrapText="true" style="-fx-font-size: 13px; -fx-text-fill: #4a5568; -fx-padding: 0 0 0 10;" />
+                        </VBox>
+
+                        <VBox spacing="4" style="-fx-background-color: #f8f9fa; -fx-padding: 12; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;">
+                            <Label text="2. THE FLOOR DICE ROLL" style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #1565c0;" />
+                            <Label text="• Clicking the central floor cube rolls a standard 6-sided die (1 to 6).\n• The resulting target digit instantly calculates the monster's visual path vector." 
+                                   wrapText="true" style="-fx-font-size: 13px; -fx-text-fill: #4a5568; -fx-padding: 0 0 0 10;" />
+                        </VBox>
+
+                        <VBox spacing="4" style="-fx-background-color: #fff5f5; -fx-padding: 12; -fx-background-radius: 8; -fx-border-color: #fed7d7; -fx-border-radius: 8;">
+                            <Label text="3. COLLISION MANAGEMENT &amp; INVALID MOVES" style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #c62828;" />
+                            <Label text="• If a destination cell is completely blocked or occupied by the opposing monster, the move is declared invalid by the engine.\n• Your monster safely preserves its old location, and the turn is securely handed over." 
+                                   wrapText="true" style="-fx-font-size: 13px; -fx-text-fill: #4a5568; -fx-padding: 0 0 0 10;" />
+                        </VBox>
+
+                        <VBox spacing="4" style="-fx-background-color: #f8f9fa; -fx-padding: 12; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;">
+                            <Label text="4. FLOOR CELL INTERACTIONS" style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #ff8f00;" />
+                            <Label text="• Landing on specialized grid sectors triggers targeted effects:\n  - SCARER / LAUGHER Doors: Boosts compatible roles or distributes values globally.\n  - Conveyor Belts &amp; Socks: Shifts board coordination arrays or inflicts negative state effects." 
+                                   wrapText="true" style="-fx-font-size: 13px; -fx-text-fill: #4a5568; -fx-padding: 0 0 0 10;" />
+                        </VBox>
+
+                        <VBox spacing="4" style="-fx-background-color: #f8f9fa; -fx-padding: 12; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;">
+                            <Label text="5. LIVE FEED MATRIX UPDATE" style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #6a1b9a;" />
+                            <Label text="• The system updates data blocks across player profiles, checks active shielding layers, and calculates final status states." 
+                                   wrapText="true" style="-fx-font-size: 13px; -fx-text-fill: #4a5568; -fx-padding: 0 0 0 10;" />
+                        </VBox>
+
+                        <VBox spacing="4" style="-fx-background-color: #f0fdf4; -fx-padding: 12; -fx-background-radius: 8; -fx-border-color: #bbf7d0; -fx-border-radius: 8;">
+                            <Label text="6. TURN SWITCH &amp; WIN CONDITIONS" style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2e7d32;" />
+                            <Label text="• If no monster encounters a final target victory state, control arrays seamlessly toggle to the opponent player.\n• The first monster to meet the game's termination threshold is immediately crowned winner." 
+                                   wrapText="true" style="-fx-font-size: 13px; -fx-text-fill: #4a5568; -fx-padding: 0 0 0 10;" />
+                        </VBox>
+
+                    </VBox>
+                </content>
+            </ScrollPane>
+
+            <Separator prefWidth="600" style="-fx-opacity: 0.6;" />
+
+            <Button text="RETURN TO MAIN MENU" 
+                    prefWidth="240" 
+                    prefHeight="46"
+                    onAction="#closeWindow"
+                    style="-fx-font-family: 'Segoe UI', Arial, sans-serif;
+                           -fx-font-size: 13px;
+                           -fx-font-weight: bold;
+                           -fx-background-color: linear-gradient(to right, #ff416c, #ff4b2b);
+                           -fx-text-fill: white;
+                           -fx-background-radius: 10;
+                           -fx-cursor: hand;
+                           -fx-effect: dropshadow(three-pass-box, rgba(255,65,108,0.35), 10, 0, 0, 4);"/>
+
+        </VBox>
+    </children>
+</StackPane>
