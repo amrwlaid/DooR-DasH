@@ -28,6 +28,8 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.KeyCode;
 
 import java.io.IOException;
 import java.net.URL;
@@ -41,7 +43,7 @@ public class GameController {
     @FXML private Label statusLabel;
     @FXML private Label turnLabel;
     @FXML private Label cardLabel;
-    @FXML private TextArea logFeedArea; 
+    @FXML private TextArea logFeedArea;
 
     @FXML private Label pPos, pOrig, pCurr, pType, pEnergy, pName, pStatus;
     @FXML private Label oPos, oOrig, oCurr, oType, oEnergy, oName, oStatus;
@@ -53,46 +55,77 @@ public class GameController {
     private boolean isAnimating = false;
     private Timeline alertAutoClearTimeline;
 
-    private final double CELL_SIZE = 65.0; 
-    private final double CELL_GAP = 2.0;    
+    private final double CELL_SIZE = 65.0;
+    private final double CELL_GAP = 2.0;
 
     public void initialize(Role selectedRole) {
         try {
             this.game = new Game(selectedRole);
-            
+
             pToken = new Circle(13, Color.BLUEVIOLET);
             oToken = new Circle(13, Color.CRIMSON);
             pToken.setStroke(Color.WHITE);
             pToken.setStrokeWidth(2.5);
             oToken.setStroke(Color.WHITE);
             oToken.setStrokeWidth(2.5);
-            
+
             tokenLayer.getChildren().addAll(pToken, oToken);
-            
+
             setupBoard();
             updateUI();
             placeTokens();
-            
+
             logAction("Match Initiated. Layout generated successfully.");
             postAlertNotification("Game Started! Welcome.");
-            
+
+            Platform.runLater(() -> {
+                if (boardGrid.getScene() != null) {
+                    boardGrid.getScene().addEventHandler(KeyEvent.KEY_PRESSED, this::handleCheatingKeys);
+                }
+            });
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void logAction(String clearMessage) {
+    private void handleCheatingKeys(KeyEvent event) {
+        if (isAnimating || game.getWinner() != null) return;
+        
+        if (event.getCode() == KeyCode.W) {
+            Monster p = game.getPlayer();
+            p.setPosition(99);
+            p.setEnergy(1000);
+            logAction("[CHEAT] Player teleported to Cell 99 and energy set to 1000 for win demonstration.");
+            postAlertNotification("Cheated: Instawin activated!");
+            setupBoard();
+            updateUI();
+            placeTokens();
+            if (game.getWinner() != null) {
+                handleGameOver(game.getWinner());
+            }
+        } else if (event.getCode() == KeyCode.E) {
+            Monster p = game.getPlayer();
+            p.setEnergy(p.getEnergy() + 500);
+            logAction("[CHEAT] Player energy boosted by +500.");
+            postAlertNotification("Cheated: +500 Energy");
+            updateUI();
+            if (game.getWinner() != null) {
+                handleGameOver(game.getWinner());
+            }
+        }
+    }
+
+    private void logAction(String message) {
         if (logFeedArea != null) {
-            logFeedArea.appendText(clearMessage + "\n");
-            logFeedArea.setScrollTop(Double.MAX_VALUE); 
+            logFeedArea.appendText(message + "\n");
+            logFeedArea.setScrollTop(Double.MAX_VALUE);
         }
     }
 
     private void postAlertNotification(String text) {
         statusLabel.setText(text);
-        if (alertAutoClearTimeline != null) {
-            alertAutoClearTimeline.stop();
-        }
+        if (alertAutoClearTimeline != null) alertAutoClearTimeline.stop();
         alertAutoClearTimeline = new Timeline(new KeyFrame(Duration.seconds(3.0), event -> {
             statusLabel.setText("Ready to Dash!");
         }));
@@ -103,13 +136,12 @@ public class GameController {
     private void setupBoard() {
         boardGrid.getChildren().clear();
         Cell[][] cells = game.getBoard().getBoardCells();
-        
+
         for (int i = 0; i < Constants.BOARD_SIZE; i++) {
             int[] pos = indexToRowCol(i);
             int engineRow = pos[0];
             int engineCol = pos[1];
-            int visualRow = (Constants.BOARD_ROWS - 1) - engineRow; 
-            
+            int visualRow = (Constants.BOARD_ROWS - 1) - engineRow;
             boardGrid.add(createVisualCell(i, cells[engineRow][engineCol]), engineCol, visualRow);
         }
     }
@@ -121,7 +153,6 @@ public class GameController {
         cell.setMaxSize(CELL_SIZE, CELL_SIZE);
         cell.setStyle("-fx-border-color: rgba(255,255,255,0.15); -fx-background-color: rgba(0,0,0,0.25);");
 
-        // Displaying native 0-99 indices onto the cells
         Label indexLabel = new Label(String.valueOf(index));
         indexLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 11; -fx-font-weight: bold;");
         StackPane.setAlignment(indexLabel, Pos.TOP_LEFT);
@@ -131,7 +162,6 @@ public class GameController {
         String secondaryText = "";
         Color textColor = Color.WHITE;
 
-        // Visual layout determined by Constants configuration arrays
         if (containsElement(Constants.MONSTER_CELL_INDICES, index)) {
             imgName = "m_bg.png";
             if (data instanceof MonsterCell && ((MonsterCell) data).getCellMonster() != null) {
@@ -156,7 +186,6 @@ public class GameController {
             DoorCell door = (DoorCell) data;
             imgName = (door.getRole() == Role.LAUGHER) ? "door_bg.png" : "door_bg2.png";
             secondaryText = "DR: +" + door.getEnergy();
-            
             if (door.isActivated()) {
                 cell.setStyle("-fx-border-color: #ff5722; -fx-background-color: rgba(244,67,54,0.3); -fx-opacity: 0.55;");
                 secondaryText = "[USED]";
@@ -173,7 +202,7 @@ public class GameController {
             bg.setFitHeight(CELL_SIZE - 2);
             cell.getChildren().add(bg);
         }
-        
+
         cell.getChildren().add(indexLabel);
 
         if (!secondaryText.isEmpty()) {
@@ -184,14 +213,12 @@ public class GameController {
             subInfo.setPadding(new Insets(2));
             cell.getChildren().add(subInfo);
         }
-        
+
         return cell;
     }
 
     private boolean containsElement(int[] arr, int target) {
-        for (int val : arr) {
-            if (val == target) return true;
-        }
+        for (int val : arr) if (val == target) return true;
         return false;
     }
 
@@ -203,7 +230,7 @@ public class GameController {
 
     private void executeTwoStageAnimation(Monster activeMonster, int start, int intermediate, int finalDest) {
         Circle targetToken = (activeMonster == game.getPlayer()) ? pToken : oToken;
-        
+
         double startX = calculateAbsoluteX(start);
         double startY = calculateAbsoluteY(start);
         double interX = calculateAbsoluteX(intermediate);
@@ -213,13 +240,10 @@ public class GameController {
 
         int pIndex = (activeMonster == game.getPlayer()) ? finalDest : game.getPlayer().getPosition();
         int oIndex = (activeMonster == game.getOpponent()) ? finalDest : game.getOpponent().getPosition();
-        
+
         if (pIndex == oIndex) {
-            if (activeMonster == game.getPlayer()) {
-                finalX -= 12;
-            } else {
-                finalX += 12;
-            }
+            if (activeMonster == game.getPlayer()) finalX -= 12;
+            else finalX += 12;
         }
 
         targetToken.setTranslateX(startX);
@@ -228,40 +252,37 @@ public class GameController {
         TranslateTransition phase1 = new TranslateTransition(Duration.millis(400), targetToken);
         phase1.setFromX(startX);
         phase1.setFromY(startY);
-        
+
         if (intermediate != finalDest) {
             phase1.setToX(interX);
             phase1.setToY(interY);
-            
+
             TranslateTransition phase2 = new TranslateTransition(Duration.millis(400), targetToken);
             phase2.setFromX(interX);
             phase2.setFromY(interY);
             phase2.setToX(finalX);
             phase2.setToY(finalY);
-            
+
             SequentialTransition totalMovement = new SequentialTransition(
-                phase1, 
-                new PauseTransition(Duration.millis(100)), 
-                phase2
+                phase1, new PauseTransition(Duration.millis(100)), phase2
             );
-            
-            totalMovement.setOnFinished(e -> finishTurnSequence());
+            totalMovement.setOnFinished(ev -> finishTurnSequence());
             totalMovement.play();
         } else {
             phase1.setToX(finalX);
             phase1.setToY(finalY);
-            phase1.setOnFinished(e -> finishTurnSequence());
+            phase1.setOnFinished(ev -> finishTurnSequence());
             phase1.play();
         }
     }
 
     private void finishTurnSequence() {
         Platform.runLater(() -> {
-            setupBoard(); 
+            setupBoard();
             updateUI();
-            placeTokens(); 
+            placeTokens();
             isAnimating = false;
-            
+
             if (game.getWinner() != null) {
                 handleGameOver(game.getWinner());
             } else if (game.getCurrent() == game.getOpponent()) {
@@ -274,75 +295,65 @@ public class GameController {
         isAnimating = true;
         playDiceSound();
 
-        // Enforce structural dice boundary rolling exclusively from 1 to 6
         Timeline diceAnim = new Timeline(new KeyFrame(Duration.millis(80), e -> {
             diceLabel.setText(String.valueOf((int)(Math.random() * 6) + 1));
         }));
         diceAnim.setCycleCount(10);
-        
+
         diceAnim.setOnFinished(e -> {
             Monster activeMonster = game.getCurrent();
-            int startPos = activeMonster.getPosition();
-            int initialDeckSize = Board.getCards().size();
-
             int prePlayerEnergy = game.getPlayer().getEnergy();
             int preOpponentEnergy = game.getOpponent().getEnergy();
 
-            if (activeMonster.isFrozen()) {
-                postAlertNotification(activeMonster.getName() + " is frozen! Turn skipped.");
-                logAction(activeMonster.getName() + " is frozen! Skipping turn.");
-            }
-
             try {
-                // A. Dice output verification (Guaranteed between 1 and 6)
-                int visuallyRolledFace = Integer.parseInt(diceLabel.getText());
+                game.playTurn();
                 
-                // B. Establish initial movement target layout within the 0-99 matrix mapping rules
-                int intermediatePos = (startPos + visuallyRolledFace) % Constants.BOARD_SIZE;
+                if (game.isTurnWasFrozen()) {
+                    logAction(activeMonster.getName() + " was FROZEN! Turn skipped.");
+                    postAlertNotification(activeMonster.getName() + " is frozen! Turn skipped.");
+                    finishTurnSequence();
+                    return;
+                }
 
-                // C. Advance underlying core game state tracking logic
-                game.playTurn(); 
+                int actualRoll = game.getLastRoll();
+                diceLabel.setText(String.valueOf(actualRoll));
                 
-                // D. Extract subsequent post-calculation endpoint index values
+                int startPos = game.getTurnStartPos();
+                int intermediatePos = game.getTurnIntermediatePos();
                 int finalPos = activeMonster.getPosition();
 
-                // E. Process log feed alerts
-                Cell landedCell = game.getBoard().getBoardCells()[indexToRowCol(finalPos)[0]][indexToRowCol(finalPos)[1]];
-                String cellTypeName = landedCell.getClass().getSimpleName().replace("Cell", "");
-                if (containsElement(Constants.MONSTER_CELL_INDICES, finalPos)) cellTypeName = "MONSTER";
+                Cell landedCell = game.getBoard().getBoardCells()
+                        [indexToRowCol(finalPos)[0]][indexToRowCol(finalPos)[1]];
+                String cellTypeName;
+                if (containsElement(Constants.MONSTER_CELL_INDICES, finalPos))       cellTypeName = "MONSTER";
                 else if (containsElement(Constants.CONVEYOR_CELL_INDICES, finalPos)) cellTypeName = "CONVEYOR";
-                else if (containsElement(Constants.SOCK_CELL_INDICES, finalPos)) cellTypeName = "SOCK";
-                else if (containsElement(Constants.CARD_CELL_INDICES, finalPos)) cellTypeName = "CARD";
-                else if (landedCell instanceof DoorCell) {
+                else if (containsElement(Constants.SOCK_CELL_INDICES, finalPos))     cellTypeName = "SOCK";
+                else if (containsElement(Constants.CARD_CELL_INDICES, finalPos))     cellTypeName = "CARD";
+                else if (landedCell instanceof DoorCell)
                     cellTypeName = ((DoorCell) landedCell).getRole() + "_DOOR";
-                }
-                if (cellTypeName.isEmpty()) cellTypeName = "NORMAL";
-                
-                logAction(activeMonster.getName() + " rolled a " + visuallyRolledFace + " and reached cell index " + finalPos + " (" + cellTypeName.toUpperCase() + ")");
+                else cellTypeName = "NORMAL";
 
-                // F. Update telemetry logs
-                int deltaPlayer = game.getPlayer().getEnergy() - prePlayerEnergy;
+                logAction(activeMonster.getName() + " rolled a " + actualRoll
+                        + " and moved to cell " + finalPos + " (" + cellTypeName + ")");
+
+                int deltaPlayer   = game.getPlayer().getEnergy()   - prePlayerEnergy;
                 int deltaOpponent = game.getOpponent().getEnergy() - preOpponentEnergy;
-                if (deltaPlayer != 0) logAction("  -> " + game.getPlayer().getName() + " got " + deltaPlayer + " energy!");
-                if (deltaOpponent != 0) logAction("  -> " + game.getOpponent().getName() + " got " + deltaOpponent + " energy!");
+                if (deltaPlayer   != 0) logAction("  -> " + game.getPlayer().getName()   + " energy: " + (deltaPlayer   > 0 ? "+" : "") + deltaPlayer);
+                if (deltaOpponent != 0) logAction("  -> " + game.getOpponent().getName() + " energy: " + (deltaOpponent > 0 ? "+" : "") + deltaOpponent);
 
-                if (Board.getCards().size() != initialDeckSize && !Board.getCards().isEmpty()) {
-                    Card drawn = Board.getCards().get(0);
+                Card drawn = game.getTurnDrawnCard();
+                if (drawn != null) {
                     cardLabel.setText("[" + drawn.getName() + "]: " + drawn.getDescription());
-                    logAction("  -> Card Activated: [" + drawn.getName() + "]");
+                    logAction("  -> Card drawn: [" + drawn.getName() + "] - " + drawn.getDescription());
                 }
 
-                // G. Transition graphics across layout positions smoothly
                 executeTwoStageAnimation(activeMonster, startPos, intermediatePos, finalPos);
 
             } catch (InvalidMoveException ex) {
-                postAlertNotification("Prohibited Move: " + ex.getMessage());
+                postAlertNotification("Invalid Move: " + ex.getMessage());
+                logAction("  -> Invalid move: " + ex.getMessage());
                 isAnimating = false;
                 updateUI();
-                
-                if (game.getCurrent() == game.getOpponent() && game.getWinner() != null) {
-                    triggerOpponentAI();
-                }
             }
         });
         diceAnim.play();
@@ -356,70 +367,65 @@ public class GameController {
                 try {
                     game.usePowerup();
                     postAlertNotification("Opponent activated Power-up!");
-                    logAction(game.getOpponent().getName() + " used their power-up modification status!");
+                    logAction(game.getOpponent().getName() + " used their power-up!");
                     updateUI();
-                } catch (Exception ex) {}
+                } catch (Exception ex) { }
             }
-            
+
             isAnimating = true;
             Monster opponent = game.getOpponent();
-            int startPos = opponent.getPosition();
-            int initialDeckSize = Board.getCards().size();
-
-            int prePlayerEnergy = game.getPlayer().getEnergy();
+            int prePlayerEnergy   = game.getPlayer().getEnergy();
             int preOpponentEnergy = game.getOpponent().getEnergy();
 
             try {
                 game.playTurn();
+                
+                if (game.isTurnWasFrozen()) {
+                    logAction(opponent.getName() + " was FROZEN! Turn skipped.");
+                    postAlertNotification(opponent.getName() + " is frozen! Turn skipped.");
+                    finishTurnSequence();
+                    return;
+                }
+
+                int actualRoll = game.getLastRoll();
+                diceLabel.setText(String.valueOf(actualRoll));
+                
+                int startPos = game.getTurnStartPos();
+                int intermediatePos = game.getTurnIntermediatePos();
                 int finalPos = opponent.getPosition();
-                
-                // Track backend displacement logic to construct an equivalent dice telemetry display value (1 to 6)
-                int actualEngineRoll = (finalPos - startPos + Constants.BOARD_SIZE) % Constants.BOARD_SIZE;
-                if (actualEngineRoll < 1 || actualEngineRoll > 6) {
-                    actualEngineRoll = (int)(Math.random() * 6) + 1; // Safeguard configuration fallback
-                }
-                
-                diceLabel.setText(String.valueOf(actualEngineRoll));
-                int intermediatePos = (startPos + actualEngineRoll) % Constants.BOARD_SIZE;
 
-                Cell landedCell = game.getBoard().getBoardCells()[indexToRowCol(finalPos)[0]][indexToRowCol(finalPos)[1]];
-                String cellTypeName = landedCell.getClass().getSimpleName();
-                
-                if (containsElement(Constants.MONSTER_CELL_INDICES, finalPos)) cellTypeName = "MONSTER";
+                Cell landedCell = game.getBoard().getBoardCells()
+                        [indexToRowCol(finalPos)[0]][indexToRowCol(finalPos)[1]];
+                String cellTypeName;
+                if (containsElement(Constants.MONSTER_CELL_INDICES, finalPos))       cellTypeName = "MONSTER";
                 else if (containsElement(Constants.CONVEYOR_CELL_INDICES, finalPos)) cellTypeName = "CONVEYOR";
-                else if (containsElement(Constants.SOCK_CELL_INDICES, finalPos)) cellTypeName = "SOCK";
-                else if (containsElement(Constants.CARD_CELL_INDICES, finalPos)) cellTypeName = "CARD";
-                else if (landedCell instanceof DoorCell) {
+                else if (containsElement(Constants.SOCK_CELL_INDICES, finalPos))     cellTypeName = "SOCK";
+                else if (containsElement(Constants.CARD_CELL_INDICES, finalPos))     cellTypeName = "CARD";
+                else if (landedCell instanceof DoorCell)
                     cellTypeName = ((DoorCell) landedCell).getRole() + "_DOOR";
-                } else {
-                    cellTypeName = cellTypeName.replace("Cell", "");
-                    if (cellTypeName.isEmpty()) {
-                        cellTypeName = "NORMAL";
-                    }
-                }
-                
-                logAction(opponent.getName() + " rolled " + actualEngineRoll + " and reached cell index " + finalPos + " (" + cellTypeName.toUpperCase() + ")");
+                else cellTypeName = "NORMAL";
 
-                int deltaPlayer = game.getPlayer().getEnergy() - prePlayerEnergy;
+                logAction(opponent.getName() + " rolled a " + actualRoll
+                        + " and moved to cell " + finalPos + " (" + cellTypeName + ")");
+
+                int deltaPlayer   = game.getPlayer().getEnergy()   - prePlayerEnergy;
                 int deltaOpponent = game.getOpponent().getEnergy() - preOpponentEnergy;
-                
-                if (deltaPlayer != 0) logAction("  -> " + game.getPlayer().getName() + " got " + deltaPlayer + " energy!");
-                if (deltaOpponent != 0) logAction("  -> " + game.getOpponent().getName() + " got " + deltaOpponent + " energy!");
-                
-                if (Board.getCards().size() != initialDeckSize && !Board.getCards().isEmpty()) {
-                    Card drawn = Board.getCards().get(0);
+                if (deltaPlayer   != 0) logAction("  -> " + game.getPlayer().getName()   + " energy: " + (deltaPlayer   > 0 ? "+" : "") + deltaPlayer);
+                if (deltaOpponent != 0) logAction("  -> " + game.getOpponent().getName() + " energy: " + (deltaOpponent > 0 ? "+" : "") + deltaOpponent);
+
+                Card drawn = game.getTurnDrawnCard();
+                if (drawn != null) {
                     cardLabel.setText("[" + drawn.getName() + "]: " + drawn.getDescription());
-                    logAction("  -> Card Activated: [" + drawn.getName() + "]");
+                    logAction("  -> Card drawn: [" + drawn.getName() + "] - " + drawn.getDescription());
                 }
 
                 executeTwoStageAnimation(opponent, startPos, intermediatePos, finalPos);
+
             } catch (InvalidMoveException ex) {
-                logAction("AI triggered Invalid Move: (" + ex.getMessage() + "). Re-rolling turn instantly...");
+                logAction("Opponent invalid move: " + ex.getMessage() + " - retrying...");
                 isAnimating = false;
                 updateUI();
-                if (game.getWinner() == null) {
-                    triggerOpponentAI(); 
-                }
+                if (game.getWinner() == null) triggerOpponentAI();
             } catch (Exception ex) {
                 isAnimating = false;
                 updateUI();
@@ -430,15 +436,10 @@ public class GameController {
 
     private void placeTokens() {
         if (game == null || game.getPlayer() == null || game.getOpponent() == null) return;
-
         int pIndex = game.getPlayer().getPosition();
         int oIndex = game.getOpponent().getPosition();
-
-        double pX = calculateAbsoluteX(pIndex);
-        double pY = calculateAbsoluteY(pIndex);
-        double oX = calculateAbsoluteX(oIndex);
-        double oY = calculateAbsoluteY(oIndex);
-
+        double pX = calculateAbsoluteX(pIndex), pY = calculateAbsoluteY(pIndex);
+        double oX = calculateAbsoluteX(oIndex), oY = calculateAbsoluteY(oIndex);
         if (pIndex == oIndex) {
             pToken.setTranslateX(pX - 12);
             oToken.setTranslateX(oX + 12);
@@ -465,40 +466,34 @@ public class GameController {
         int cols = Constants.BOARD_COLS;
         int row = index / cols;
         int col = index % cols;
-        // Alternating row alignment (Boustrophedon / Snakes and Ladders track layout pattern)
-        if (row % 2 == 1) {
-            col = cols - 1 - col;
-        }
+        if (row % 2 == 1) col = cols - 1 - col;
         return new int[]{row, col};
     }
 
     private void handleGameOver(Monster winner) {
-        statusLabel.setText("🏆 " + winner.getName() + " WINS!");
-        logAction("🏆 GAME OVER! WINNER: " + winner.getName());
+        statusLabel.setText("[WIN] " + winner.getName() + " WINS!");
+        logAction("[WIN] GAME OVER! WINNER: " + winner.getName());
         PauseTransition delay = new PauseTransition(Duration.seconds(2));
         delay.setOnFinished(e -> showGameOver(winner));
         delay.play();
     }
 
     @FXML
-    private void handleExit() {
-        showGameOver(null); 
-    }
+    private void handleExit() { showGameOver(null); }
 
     private void showGameOver(Monster winner) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/GameOver.fxml"));
             Parent root = loader.load();
             GameOverController controller = loader.getController();
-            
             if (winner != null) {
-                controller.setWinnerDetails(winner.getName() + " (" + winner.getOriginalRole() + ")\n" +
-                        "Player Final Energy: " + game.getPlayer().getEnergy() + "\n" +
-                        "Opponent Final Energy: " + game.getOpponent().getEnergy());
+                controller.setWinnerDetails(
+                    winner.getName() + " (" + winner.getOriginalRole() + ")\n" +
+                    "Player Final Energy: "   + game.getPlayer().getEnergy()   + "\n" +
+                    "Opponent Final Energy: " + game.getOpponent().getEnergy());
             } else {
                 controller.setWinnerDetails("No Winner");
             }
-
             Stage stage = (Stage) boardGrid.getScene().getWindow();
             stage.setScene(new Scene(root));
         } catch (IOException ex) {
@@ -514,33 +509,28 @@ public class GameController {
             postAlertNotification("Power-up activated successfully!");
             logAction(game.getPlayer().getName() + " activated Power-Up.");
             updateUI();
-            
+
             double targetPX = calculateAbsoluteX(game.getPlayer().getPosition());
             double targetPY = calculateAbsoluteY(game.getPlayer().getPosition());
             double targetOX = calculateAbsoluteX(game.getOpponent().getPosition());
             double targetOY = calculateAbsoluteY(game.getOpponent().getPosition());
 
             if (game.getPlayer().getPosition() == game.getOpponent().getPosition()) {
-                targetPX -= 12;
-                targetOX += 12;
+                targetPX -= 12; targetOX += 12;
             }
 
             TranslateTransition ttP = new TranslateTransition(Duration.millis(400), pToken);
-            ttP.setFromX(pToken.getTranslateX());
-            ttP.setFromY(pToken.getTranslateY());
-            ttP.setToX(targetPX);
-            ttP.setToY(targetPY);
+            ttP.setFromX(pToken.getTranslateX()); ttP.setFromY(pToken.getTranslateY());
+            ttP.setToX(targetPX); ttP.setToY(targetPY);
 
             TranslateTransition ttO = new TranslateTransition(Duration.millis(400), oToken);
-            ttO.setFromX(oToken.getTranslateX());
-            ttO.setFromY(oToken.getTranslateY());
-            ttO.setToX(targetOX);
-            ttO.setToY(targetOY);
+            ttO.setFromX(oToken.getTranslateX()); ttO.setFromY(oToken.getTranslateY());
+            ttO.setToX(targetOX); ttO.setToY(targetOY);
 
             ParallelTransition pt = new ParallelTransition(ttP, ttO);
-            pt.setOnFinished(e -> placeTokens());
+            pt.setOnFinished(ev -> placeTokens());
             pt.play();
-            
+
         } catch (Exception e) {
             postAlertNotification("Denied: " + e.getMessage());
         }
@@ -548,33 +538,33 @@ public class GameController {
 
     private void updateUI() {
         Monster p = game.getPlayer();
-        if (pName != null) pName.setText(p.getName().toUpperCase()); 
-        pPos.setText("Position: " + p.getPosition()); 
+        if (pName != null) pName.setText(p.getName().toUpperCase());
+        pPos.setText("Position: " + p.getPosition());
         pOrig.setText("Original: " + p.getOriginalRole());
-        pCurr.setText("Role: " + p.getRole() + (p.isConfused() ? " [CONFUSED]" : "")); // Fixed here
+        pCurr.setText("Role: " + p.getRole() + (p.isConfused() ? " [CONFUSED]" : ""));
         pType.setText("Type: " + p.getClass().getSimpleName());
         pEnergy.setText("Energy: " + p.getEnergy());
         pStatus.setText("Status: " + buildStatusString(p));
 
         Monster o = game.getOpponent();
         if (oName != null) oName.setText(o.getName().toUpperCase());
-        oPos.setText("Position: " + o.getPosition()); 
+        oPos.setText("Position: " + o.getPosition());
         oOrig.setText("Original: " + o.getOriginalRole());
-        oCurr.setText("Role: " + o.getRole() + (o.isConfused() ? " [CONFUSED]" : "")); // Fixed here
+        oCurr.setText("Role: " + o.getRole() + (o.isConfused() ? " [CONFUSED]" : ""));
         oType.setText("Type: " + o.getClass().getSimpleName());
         oEnergy.setText("Energy: " + o.getEnergy());
         oStatus.setText("Status: " + buildStatusString(o));
-        
-        if (game.getWinner() == null) {
+
+        if (game.getWinner() == null)
             turnLabel.setText(game.getCurrent() == p ? "Turn: PLAYER" : "Turn: OPPONENT");
-        }
     }
+
     private String buildStatusString(Monster m) {
-        ArrayList<String> activeEffects = new ArrayList<>();
-        if (m.isShielded()) activeEffects.add("Shielded 🛡️");
-        if (m.isFrozen()) activeEffects.add("Frozen ❄️");
-        if (m.isConfused()) activeEffects.add("Confused 🌀 (" + m.getConfusionTurns() + " Turns)");
-        return activeEffects.isEmpty() ? "Normal" : String.join(", ", activeEffects);
+        ArrayList<String> effects = new ArrayList<>();
+        if (m.isShielded()) effects.add("Shielded [SHIELD]");
+        if (m.isFrozen())   effects.add("Frozen [FROZEN]");
+        if (m.isConfused()) effects.add("Confused [CONFUSED] (" + m.getConfusionTurns() + " turns)");
+        return effects.isEmpty() ? "Normal" : String.join(", ", effects);
     }
 
     private void playDiceSound() {
