@@ -32,11 +32,11 @@ public class We_Start_the_Game {
         monster2.setToggleGroup(group);
         updateSelection();
 
-        // ── ANIMATION: circles idle pulse ──
+        // â”€â”€ ANIMATION: circles idle pulse â”€â”€
         animateCirclePulse(circle1, 0);
         animateCirclePulse(circle2, 300);
 
-        // ── ANIMATION: fade in root on load ──
+        // â”€â”€ ANIMATION: fade in root on load â”€â”€
         if (rootBox != null) {
             rootBox.setOpacity(0);
             FadeTransition ft = new FadeTransition(Duration.millis(700), rootBox);
@@ -111,9 +111,9 @@ public class We_Start_the_Game {
 
         if (chosenMonster == null) {
             if (warningLabel != null) {
-                warningLabel.setText("⚠️ Please select a monster before continuing!");
+                warningLabel.setText("âš ï¸� Please select a monster before continuing!");
                 warningLabel.setVisible(true);
-                // ── ANIMATION: shake the warning label ──
+                // â”€â”€ ANIMATION: shake the warning label â”€â”€
                 TranslateTransition shake = new TranslateTransition(Duration.millis(60), warningLabel);
                 shake.setFromX(0); shake.setByX(8);
                 shake.setAutoReverse(true);
@@ -134,7 +134,7 @@ public class We_Start_the_Game {
             Stage stage = new Stage();
             Scene scene = new Scene(root);
 
-            // ── ANIMATION: fade in the game scene ──
+            // â”€â”€ ANIMATION: fade in the game scene â”€â”€
             root.setOpacity(0);
             stage.setScene(scene);
             stage.setTitle("DooR DasH: Scare vs Laugh Touchdown");
