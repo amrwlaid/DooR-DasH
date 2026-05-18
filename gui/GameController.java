@@ -231,49 +231,35 @@ public class GameController {
     private void executeTwoStageAnimation(Monster activeMonster, int start, int intermediate, int finalDest) {
         Circle targetToken = (activeMonster == game.getPlayer()) ? pToken : oToken;
 
+        // Calculate direct coordinates from start to final destination
         double startX = calculateAbsoluteX(start);
         double startY = calculateAbsoluteY(start);
-        double interX = calculateAbsoluteX(intermediate);
-        double interY = calculateAbsoluteY(intermediate);
         double finalX = calculateAbsoluteX(finalDest);
         double finalY = calculateAbsoluteY(finalDest);
 
         int pIndex = (activeMonster == game.getPlayer()) ? finalDest : game.getPlayer().getPosition();
         int oIndex = (activeMonster == game.getOpponent()) ? finalDest : game.getOpponent().getPosition();
 
+        // Prevent token overlap if they occupy the same final cell
         if (pIndex == oIndex) {
             if (activeMonster == game.getPlayer()) finalX -= 12;
             else finalX += 12;
         }
 
+        // Set the token to its starting position explicitly before moving
         targetToken.setTranslateX(startX);
         targetToken.setTranslateY(startY);
 
-        TranslateTransition phase1 = new TranslateTransition(Duration.millis(400), targetToken);
-        phase1.setFromX(startX);
-        phase1.setFromY(startY);
+        // Create a single, smooth transition directly to the final destination
+        TranslateTransition directMovement = new TranslateTransition(Duration.millis(500), targetToken);
+        directMovement.setFromX(startX);
+        directMovement.setFromY(startY);
+        directMovement.setToX(finalX);
+        directMovement.setToY(finalY);
 
-        if (intermediate != finalDest) {
-            phase1.setToX(interX);
-            phase1.setToY(interY);
-
-            TranslateTransition phase2 = new TranslateTransition(Duration.millis(400), targetToken);
-            phase2.setFromX(interX);
-            phase2.setFromY(interY);
-            phase2.setToX(finalX);
-            phase2.setToY(finalY);
-
-            SequentialTransition totalMovement = new SequentialTransition(
-                phase1, new PauseTransition(Duration.millis(100)), phase2
-            );
-            totalMovement.setOnFinished(ev -> finishTurnSequence());
-            totalMovement.play();
-        } else {
-            phase1.setToX(finalX);
-            phase1.setToY(finalY);
-            phase1.setOnFinished(ev -> finishTurnSequence());
-            phase1.play();
-        }
+        // Clean up and proceed to next turn when the direct animation finishes
+        directMovement.setOnFinished(ev -> finishTurnSequence());
+        directMovement.play();
     }
 
     private void finishTurnSequence() {
